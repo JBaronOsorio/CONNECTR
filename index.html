@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CONNECTR — Gestión de Redes Rurales en Colombia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --midnight: #0B1222;
+  --deep: #111B2E;
+  --navy: #162033;
+  --teal: #00D4AA;
+  --teal-dim: #00B893;
+  --teal-glow: rgba(0,212,170,0.15);
+  --sky: #38BDF8;
+  --lavender: #A78BFA;
+  --sand: #F5F0E8;
+  --cream: #FAFAF7;
+  --white: #FFFFFF;
+  --gray-100: #F1F5F9;
+  --gray-300: #CBD5E1;
+  --gray-400: #94A3B8;
+  --gray-500: #64748B;
+  --gray-600: #475569;
+  --gray-800: #1E293B;
+  --font-display: 'Space Mono', monospace;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--gray-800);
+  background: var(--cream);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== NAV ===== */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(11,18,34,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(0,212,170,0.1);
+  transition: background 0.3s;
+}
+.nav-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem; height: 64px;
+}
+.nav-logo {
+  font-family: var(--font-display); font-weight: 700; font-size: 1.25rem;
+  color: var(--teal); text-decoration: none; letter-spacing: 2px;
+}
+.nav-logo span { color: var(--white); }
+.nav-links { display: flex; gap: 2rem; list-style: none; }
+.nav-links a {
+  color: var(--gray-400); text-decoration: none; font-size: 0.875rem;
+  font-weight: 500; transition: color 0.2s; letter-spacing: 0.5px;
+}
+.nav-links a:hover { color: var(--teal); }
+.nav-cta {
+  background: var(--teal); color: var(--midnight) !important;
+  padding: 0.5rem 1.25rem; border-radius: 6px; font-weight: 600 !important;
+  transition: transform 0.2s, box-shadow 0.2s !important;
+}
+.nav-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,212,170,0.3); }
+.hamburger { display: none; background: none; border: none; cursor: pointer; padding: 4px; }
+.hamburger span {
+  display: block; width: 24px; height: 2px; background: var(--white);
+  margin: 5px 0; transition: 0.3s;
+}
+
+/* ===== HERO ===== */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex; align-items: center;
+  background: var(--midnight);
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 70% 40%, rgba(0,212,170,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 20% 80%, rgba(56,189,248,0.06) 0%, transparent 50%);
+}
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,212,170,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,170,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 70% 70% at 60% 50%, black 20%, transparent 80%);
+}
+.hero-inner {
+  position: relative; z-index: 2;
+  max-width: 1200px; margin: 0 auto; padding: 8rem 2rem 4rem;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.2);
+  border-radius: 100px; padding: 0.4rem 1rem; margin-bottom: 1.5rem;
+  font-size: 0.8rem; color: var(--teal); font-weight: 500; letter-spacing: 0.5px;
+}
+.hero-badge::before {
+  content: ''; width: 6px; height: 6px; background: var(--teal);
+  border-radius: 50%; animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; } 50% { opacity: 0.3; }
+}
+.hero h1 {
+  font-family: var(--font-display); font-size: 3.2rem; line-height: 1.15;
+  color: var(--white); margin-bottom: 1.5rem; letter-spacing: -0.5px;
+}
+.hero h1 em {
+  font-style: normal; color: var(--teal);
+  text-decoration: underline; text-decoration-color: rgba(0,212,170,0.3);
+  text-underline-offset: 6px;
+}
+.hero-sub {
+  font-size: 1.125rem; color: var(--gray-400); line-height: 1.7;
+  margin-bottom: 2.5rem; max-width: 520px;
+}
+.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: var(--teal); color: var(--midnight);
+  padding: 0.85rem 2rem; border-radius: 8px;
+  font-weight: 600; font-size: 0.95rem; text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s; border: none; cursor: pointer;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,212,170,0.25); }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: transparent; color: var(--white);
+  padding: 0.85rem 2rem; border-radius: 8px;
+  font-weight: 500; font-size: 0.95rem; text-decoration: none;
+  border: 1px solid rgba(255,255,255,0.2); transition: border-color 0.2s;
+}
+.btn-secondary:hover { border-color: var(--teal); color: var(--teal); }
+
+/* Hero visual */
+.hero-visual {
+  position: relative; display: flex; justify-content: center; align-items: center;
+}
+.hero-map {
+  width: 100%; max-width: 480px; position: relative;
+  background: rgba(22,32,51,0.8); border: 1px solid rgba(0,212,170,0.15);
+  border-radius: 16px; padding: 2rem; overflow: hidden;
+}
+.hero-map::before {
+  content: ''; position: absolute; top: -1px; left: 20%; right: 20%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--teal), transparent);
+}
+.map-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;
+}
+.map-title { font-family: var(--font-display); color: var(--white); font-size: 0.8rem; letter-spacing: 1px; }
+.map-status { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--teal); }
+.map-status::before {
+  content: ''; width: 6px; height: 6px; background: var(--teal);
+  border-radius: 50%; box-shadow: 0 0 8px var(--teal);
+}
+.map-colombia {
+  width: 100%; aspect-ratio: 1; position: relative;
+  background:
+    radial-gradient(circle at 45% 35%, rgba(0,212,170,0.08) 0%, transparent 40%),
+    radial-gradient(circle at 55% 65%, rgba(56,189,248,0.05) 0%, transparent 35%);
+  border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);
+}
+.map-dot {
+  position: absolute; width: 10px; height: 10px;
+  background: var(--teal); border-radius: 50%;
+  box-shadow: 0 0 12px rgba(0,212,170,0.5);
+  animation: map-ping 3s infinite;
+}
+.map-dot::after {
+  content: ''; position: absolute; inset: -4px;
+  border: 1px solid rgba(0,212,170,0.3); border-radius: 50%;
+  animation: map-ring 3s infinite;
+}
+.map-dot:nth-child(1) { top: 25%; left: 40%; animation-delay: 0s; }
+.map-dot:nth-child(2) { top: 35%; left: 55%; animation-delay: 0.7s; }
+.map-dot:nth-child(3) { top: 50%; left: 35%; animation-delay: 1.4s; }
+.map-dot:nth-child(4) { top: 45%; left: 60%; animation-delay: 0.3s; }
+.map-dot:nth-child(5) { top: 60%; left: 45%; animation-delay: 2.1s; }
+.map-dot:nth-child(6) { top: 30%; left: 30%; animation-delay: 1.8s; }
+.map-dot.offline { background: #EF4444; box-shadow: 0 0 12px rgba(239,68,68,0.5); }
+.map-dot.offline::after { border-color: rgba(239,68,68,0.3); }
+@keyframes map-ping { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+@keyframes map-ring { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.8); opacity: 0; } }
+.map-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 1.5rem;
+}
+.map-stat {
+  text-align: center; padding: 0.75rem;
+  background: rgba(255,255,255,0.03); border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.map-stat-val { font-family: var(--font-display); font-size: 1.25rem; color: var(--teal); font-weight: 700; }
+.map-stat-label { font-size: 0.65rem; color: var(--gray-400); margin-top: 0.25rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ===== STATS BAR ===== */
+.stats-bar {
+  background: var(--deep);
+  border-top: 1px solid rgba(0,212,170,0.08);
+  border-bottom: 1px solid rgba(0,212,170,0.08);
+  padding: 3rem 2rem;
+}
+.stats-bar-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;
+  text-align: center;
+}
+.stat-item h3 {
+  font-family: var(--font-display); font-size: 2.5rem; color: var(--teal);
+  font-weight: 700;
+}
+.stat-item p { color: var(--gray-400); font-size: 0.85rem; margin-top: 0.5rem; }
+
+/* ===== SECTIONS COMMON ===== */
+section { padding: 6rem 2rem; }
+.section-inner { max-width: 1200px; margin: 0 auto; }
+.section-label {
+  font-family: var(--font-display); font-size: 0.75rem; color: var(--teal-dim);
+  text-transform: uppercase; letter-spacing: 3px; margin-bottom: 0.75rem;
+}
+.section-title {
+  font-family: var(--font-display); font-size: 2.25rem; color: var(--midnight);
+  line-height: 1.2; margin-bottom: 1rem; letter-spacing: -0.5px;
+}
+.section-subtitle {
+  font-size: 1.05rem; color: var(--gray-500); line-height: 1.7;
+  max-width: 600px; margin-bottom: 3rem;
+}
+
+/* ===== PROBLEMA ===== */
+.problema { background: var(--cream); }
+.problema-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+.problema-stats { display: flex; flex-direction: column; gap: 1.5rem; }
+.prob-card {
+  background: var(--white);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 12px; padding: 1.5rem 2rem;
+  display: flex; align-items: center; gap: 1.5rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.prob-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.06); }
+.prob-num {
+  font-family: var(--font-display); font-size: 2rem; color: var(--teal);
+  font-weight: 700; min-width: 90px;
+}
+.prob-text h4 { font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem; }
+.prob-text p { font-size: 0.875rem; color: var(--gray-500); }
+
+/* ===== SERVICIOS ===== */
+.servicios { background: var(--white); }
+.serv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.serv-card {
+  background: var(--cream);
+  border: 1px solid rgba(0,0,0,0.04);
+  border-radius: 16px; padding: 2rem; position: relative;
+  transition: transform 0.2s, box-shadow 0.2s; overflow: hidden;
+}
+.serv-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--teal), var(--sky)); opacity: 0;
+  transition: opacity 0.3s;
+}
+.serv-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
+.serv-card:hover::before { opacity: 1; }
+.serv-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: var(--teal-glow); display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1.25rem; font-size: 1.5rem;
+}
+.serv-card h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; }
+.serv-card p { font-size: 0.9rem; color: var(--gray-500); line-height: 1.6; margin-bottom: 1rem; }
+.serv-tag {
+  display: inline-block; font-size: 0.7rem; background: rgba(0,212,170,0.1);
+  color: var(--teal-dim); padding: 0.25rem 0.75rem; border-radius: 100px;
+  font-weight: 500; letter-spacing: 0.3px;
+}
+.serv-price {
+  margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(0,0,0,0.06);
+  font-family: var(--font-display); font-size: 0.85rem; color: var(--midnight);
+}
+.serv-price span { color: var(--gray-400); font-family: var(--font-body); font-size: 0.8rem; }
+
+/* ===== CÓMO FUNCIONA ===== */
+.como { background: var(--midnight); color: var(--white); }
+.como .section-title { color: var(--white); }
+.como .section-subtitle { color: var(--gray-400); }
+.como-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+.como-step {
+  position: relative; padding: 2rem 1.5rem;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px; text-align: center;
+}
+.step-num {
+  font-family: var(--font-display); font-size: 3rem; color: rgba(0,212,170,0.15);
+  font-weight: 700; line-height: 1; margin-bottom: 1rem;
+}
+.como-step h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; }
+.como-step p { font-size: 0.85rem; color: var(--gray-400); line-height: 1.6; }
+
+/* ===== NOSOTROS ===== */
+.nosotros { background: var(--cream); }
+.nosotros-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+.nosotros-content { }
+.nosotros-content p { font-size: 1rem; color: var(--gray-600); line-height: 1.8; margin-bottom: 1.5rem; }
+.mv-cards { display: flex; flex-direction: column; gap: 1rem; }
+.mv-card {
+  background: var(--white); border-radius: 12px; padding: 1.5rem 2rem;
+  border-left: 3px solid var(--teal);
+}
+.mv-card h4 {
+  font-family: var(--font-display); font-size: 0.8rem; color: var(--teal-dim);
+  text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem;
+}
+.mv-card p { font-size: 0.9rem; color: var(--gray-600); line-height: 1.6; }
+
+/* ===== EQUIPO ===== */
+.equipo { background: var(--white); }
+.equipo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+.team-card { text-align: center; }
+.team-avatar {
+  width: 120px; height: 120px; border-radius: 50%; margin: 0 auto 1.25rem;
+  background: linear-gradient(135deg, var(--teal-glow), rgba(56,189,248,0.1));
+  border: 2px solid rgba(0,212,170,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-size: 2rem; color: var(--teal);
+  font-weight: 700;
+}
+.team-card h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.25rem; }
+.team-card .team-role {
+  font-size: 0.8rem; color: var(--teal-dim); font-weight: 500;
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.75rem;
+}
+.team-card p { font-size: 0.85rem; color: var(--gray-500); line-height: 1.6; }
+
+/* ===== BLOG ===== */
+.blog { background: var(--cream); }
+.blog-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; }
+.blog-card {
+  background: var(--white); border-radius: 16px; overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.04); transition: transform 0.2s, box-shadow 0.2s;
+}
+.blog-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
+.blog-img {
+  height: 180px;
+  background: linear-gradient(135deg, var(--midnight), var(--navy));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem; position: relative; overflow: hidden;
+}
+.blog-img::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(45deg, rgba(0,212,170,0.1), rgba(56,189,248,0.08));
+}
+.blog-body { padding: 1.5rem 2rem; }
+.blog-tag {
+  font-size: 0.7rem; color: var(--teal-dim); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;
+}
+.blog-body h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; line-height: 1.4; }
+.blog-body p { font-size: 0.85rem; color: var(--gray-500); line-height: 1.6; }
+.blog-body a {
+  display: inline-block; margin-top: 1rem; font-size: 0.85rem;
+  color: var(--teal-dim); font-weight: 600; text-decoration: none;
+}
+.blog-body a:hover { text-decoration: underline; }
+
+/* ===== CONTACTO ===== */
+.contacto { background: var(--midnight); color: var(--white); }
+.contacto .section-title { color: var(--white); }
+.contacto .section-subtitle { color: var(--gray-400); }
+.contacto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
+.contacto-form { display: flex; flex-direction: column; gap: 1rem; }
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+.form-group label { font-size: 0.8rem; color: var(--gray-400); font-weight: 500; }
+.form-group input, .form-group textarea {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 0.85rem 1rem; color: var(--white);
+  font-family: var(--font-body); font-size: 0.9rem; transition: border-color 0.2s;
+  outline: none;
+}
+.form-group input:focus, .form-group textarea:focus { border-color: var(--teal); }
+.form-group textarea { resize: vertical; min-height: 100px; }
+.contacto-info { display: flex; flex-direction: column; gap: 2rem; padding-top: 1rem; }
+.info-item { display: flex; gap: 1rem; align-items: flex-start; }
+.info-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: rgba(0,212,170,0.1); display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; flex-shrink: 0;
+}
+.info-item h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.25rem; }
+.info-item p { font-size: 0.85rem; color: var(--gray-400); }
+
+/* ===== FOOTER ===== */
+footer {
+  background: var(--midnight);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding: 2rem; text-align: center;
+}
+footer p { font-size: 0.8rem; color: var(--gray-500); }
+footer a { color: var(--teal-dim); text-decoration: none; }
+
+/* ===== ANIMATIONS ===== */
+.fade-up {
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .hero-inner { grid-template-columns: 1fr; text-align: center; }
+  .hero h1 { font-size: 2.2rem; }
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-actions { justify-content: center; }
+  .hero-visual { display: none; }
+  .stats-bar-inner { grid-template-columns: repeat(2, 1fr); }
+  .serv-grid { grid-template-columns: 1fr; }
+  .como-steps { grid-template-columns: repeat(2, 1fr); }
+  .problema-grid, .nosotros-grid, .contacto-grid { grid-template-columns: 1fr; }
+  .equipo-grid { grid-template-columns: 1fr; }
+  .blog-grid { grid-template-columns: 1fr; }
+  .nav-links { display: none; }
+  .hamburger { display: block; }
+  .nav-links.open {
+    display: flex; flex-direction: column; position: absolute;
+    top: 64px; left: 0; right: 0; background: var(--midnight);
+    padding: 1.5rem 2rem; gap: 1rem;
+    border-bottom: 1px solid rgba(0,212,170,0.1);
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">CONNECT<span>R</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#problema">Problema</a></li>
+      <li><a href="#servicios">Servicios</a></li>
+      <li><a href="#como">Cómo funciona</a></li>
+      <li><a href="#nosotros">Nosotros</a></li>
+      <li><a href="#equipo">Equipo</a></li>
+      <li><a href="#blog">Recursos</a></li>
+      <li><a href="#contacto" class="nav-cta">Contacto</a></li>
+    </ul>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-inner">
+    <div>
+      <div class="hero-badge">GovTech · SaaS · Colombia</div>
+      <h1>Gestión inteligente de <em>redes rurales</em> para Colombia</h1>
+      <p class="hero-sub">
+        Plataforma SaaS que permite a gobiernos locales, operadores telecom y comunidades monitorear, mantener y optimizar infraestructura de conectividad rural en tiempo real.
+      </p>
+      <div class="hero-actions">
+        <a href="#contacto" class="btn-primary">Solicitar demo →</a>
+        <a href="#como" class="btn-secondary">¿Cómo funciona?</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-map">
+        <div class="map-header">
+          <span class="map-title">// DASHBOARD LIVE</span>
+          <span class="map-status">EN LÍNEA</span>
+        </div>
+        <div class="map-colombia">
+          <div class="map-dot"></div>
+          <div class="map-dot"></div>
+          <div class="map-dot"></div>
+          <div class="map-dot offline"></div>
+          <div class="map-dot"></div>
+          <div class="map-dot"></div>
+        </div>
+        <div class="map-stats">
+          <div class="map-stat">
+            <div class="map-stat-val">98.7%</div>
+            <div class="map-stat-label">Uptime</div>
+          </div>
+          <div class="map-stat">
+            <div class="map-stat-val">142</div>
+            <div class="map-stat-label">Sitios</div>
+          </div>
+          <div class="map-stat">
+            <div class="map-stat-val">23ms</div>
+            <div class="map-stat-label">Latencia</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-bar-inner">
+    <div class="stat-item">
+      <h3>10M+</h3>
+      <p>Colombianos sin Internet rural</p>
+    </div>
+    <div class="stat-item">
+      <h3>6%</h3>
+      <p>Conectividad rural dispersa</p>
+    </div>
+    <div class="stat-item">
+      <h3>1,123</h3>
+      <p>Municipios por conectar</p>
+    </div>
+    <div class="stat-item">
+      <h3>9.6%</h3>
+      <p>Cobertura 4G en zonas rurales</p>
+    </div>
+  </div>
+</div>
+
+<!-- PROBLEMA -->
+<section class="problema" id="problema">
+  <div class="section-inner">
+    <div class="problema-grid">
+      <div class="fade-up">
+        <div class="section-label">El problema</div>
+        <h2 class="section-title">Colombia invierte en redes rurales, pero no puede gestionarlas</h2>
+        <p class="section-subtitle">
+          MinTIC, gobiernos locales y operadores despliegan infraestructura sin herramientas para monitorearla. Fallos pasan desapercibidos, recursos se desperdician y comunidades pierden conectividad.
+        </p>
+      </div>
+      <div class="problema-stats fade-up">
+        <div class="prob-card">
+          <div class="prob-num">0</div>
+          <div class="prob-text">
+            <h4>Herramientas locales</h4>
+            <p>No existe ninguna solución adaptada a la realidad rural colombiana</p>
+          </div>
+        </div>
+        <div class="prob-card">
+          <div class="prob-num">$10K+</div>
+          <div class="prob-text">
+            <h4>Soluciones enterprise</h4>
+            <p>Cisco y Juniper cobran +$10K/mes. Inalcanzable para municipios</p>
+          </div>
+        </div>
+        <div class="prob-card">
+          <div class="prob-num">80%</div>
+          <div class="prob-text">
+            <h4>Procesos manuales</h4>
+            <p>Mantenimiento sin datos, sin alertas, sin visibilidad del estado real</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICIOS -->
+<section class="servicios" id="servicios">
+  <div class="section-inner">
+    <div class="section-label">Servicios</div>
+    <h2 class="section-title">Todo lo que necesitas para operar redes rurales</h2>
+    <p class="section-subtitle">Tres líneas de servicio diseñadas para cada tipo de organización.</p>
+    <div class="serv-grid">
+
+      <div class="serv-card fade-up">
+        <div class="serv-icon">📡</div>
+        <h3>CONNECTR Monitor</h3>
+        <p>Dashboard de monitoreo en tiempo real con mapa interactivo de Colombia. Alertas automáticas de fallos, métricas de uptime, latencia y ancho de banda por municipio.</p>
+        <span class="serv-tag">Municipios pequeños</span>
+        <div class="serv-price">Desde $15,000 USD/año <span>· hasta 20 sitios · 1 usuario</span></div>
+      </div>
+
+      <div class="serv-card fade-up">
+        <div class="serv-icon">⚙️</div>
+        <h3>CONNECTR Pro</h3>
+        <p>Gestión centralizada de infraestructura: inventario de equipos, calendario de mantenimiento preventivo, tickets de incidentes, analytics de uso vs capacidad y reportes a MinTIC.</p>
+        <span class="serv-tag">Municipios medianos · Operadores</span>
+        <div class="serv-price">Desde $35,000 USD/año <span>· hasta 50 sitios · 5 usuarios</span></div>
+      </div>
+
+      <div class="serv-card fade-up">
+        <div class="serv-icon">🏛️</div>
+        <h3>CONNECTR Enterprise</h3>
+        <p>Solución completa para gobernaciones y operadores grandes. SLA 99.9%, soporte dedicado 24/7, integración API, capacitación extensiva y equipo de éxito del cliente.</p>
+        <span class="serv-tag">Gobernaciones · Telcos</span>
+        <div class="serv-price">Desde $150,000 USD/año <span>· sitios ilimitados · equipo dedicado</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CÓMO FUNCIONA -->
+<section class="como" id="como">
+  <div class="section-inner">
+    <div class="section-label" style="color:var(--teal);">Cómo funciona</div>
+    <h2 class="section-title">De la instalación a la visibilidad total en 48 horas</h2>
+    <p class="section-subtitle">Onboarding simple, sin infraestructura compleja.</p>
+    <div class="como-steps">
+      <div class="como-step fade-up">
+        <div class="step-num">01</div>
+        <h3>Conexión</h3>
+        <p>Conectamos con tu infraestructura existente: fibra, 4G, satelital, LoRaWAN. Sin reemplazar equipos.</p>
+      </div>
+      <div class="como-step fade-up">
+        <div class="step-num">02</div>
+        <h3>Monitoreo</h3>
+        <p>Datos en tiempo real llegan al dashboard: uptime, latencia, usuarios conectados, consumo de ancho de banda.</p>
+      </div>
+      <div class="como-step fade-up">
+        <div class="step-num">03</div>
+        <h3>Alertas</h3>
+        <p>Fallos detectados automáticamente. Notificaciones inmediatas. Tickets de mantenimiento generados.</p>
+      </div>
+      <div class="como-step fade-up">
+        <div class="step-num">04</div>
+        <h3>Reportes</h3>
+        <p>Informes automatizados para MinTIC, analytics de ROI, y datos para tomar decisiones basadas en evidencia.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NOSOTROS -->
+<section class="nosotros" id="nosotros">
+  <div class="section-inner">
+    <div class="nosotros-grid">
+      <div class="fade-up">
+        <div class="section-label">Nosotros</div>
+        <h2 class="section-title">Cerrando la brecha digital desde Medellín</h2>
+        <div class="nosotros-content">
+          <p>
+            CONNECTR nace en la Universidad EAFIT con una convicción: la conectividad rural no es solo un problema técnico, es un problema de gestión. Colombia invierte miles de millones en infraestructura, pero sin herramientas para operarla, esa inversión se pierde.
+          </p>
+          <p>
+            Somos un equipo de ingenieros y emprendedores colombianos que entienden el contexto local: la regulación MinTIC, los fondos FUTIC, los ciclos de contratación pública y las realidades de operar en zonas dispersas.
+          </p>
+        </div>
+      </div>
+      <div class="mv-cards fade-up">
+        <div class="mv-card">
+          <h4>Misión</h4>
+          <p>Ayudar a gobiernos locales, operadores y comunidades a monitorear, mantener y optimizar infraestructura de conectividad en zonas rurales de Colombia.</p>
+        </div>
+        <div class="mv-card">
+          <h4>Visión 2029</h4>
+          <p>Ser la plataforma de referencia en LATAM para operación de redes rurales, gestionando 500+ municipios y 1M+ de usuarios finales.</p>
+        </div>
+        <div class="mv-card">
+          <h4>Propósito</h4>
+          <p>Cada colombiano merece conectividad confiable. CONNECTR es la herramienta que hace visible lo invisible y permite actuar antes de que una comunidad pierda su conexión.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EQUIPO -->
+<section class="equipo" id="equipo">
+  <div class="section-inner">
+    <div class="section-label">Equipo fundador</div>
+    <h2 class="section-title">Las personas detrás de CONNECTR</h2>
+    <p class="section-subtitle">Tres ingenieros de EAFIT comprometidos con la equidad digital en Colombia.</p>
+    <div class="equipo-grid">
+      <div class="team-card fade-up">
+        <div class="team-avatar">F</div>
+        <h3>Felipe</h3>
+        <p class="team-role">CEO & Strategy</p>
+        <p>Visión de negocio, estrategia de go-to-market, relaciones con MinTIC y fondos de inversión social.</p>
+      </div>
+      <div class="team-card fade-up">
+        <div class="team-avatar">T</div>
+        <h3>Thomas</h3>
+        <p class="team-role">CTO & Product</p>
+        <p>Arquitectura técnica, desarrollo de plataforma, integración multi-tecnología y escalabilidad cloud.</p>
+      </div>
+      <div class="team-card fade-up">
+        <div class="team-avatar">JJ</div>
+        <h3>Juan José</h3>
+        <p class="team-role">COO & Growth</p>
+        <p>Operaciones, onboarding de clientes, análisis financiero y expansión comercial a nivel nacional.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BLOG -->
+<section class="blog" id="blog">
+  <div class="section-inner">
+    <div class="section-label">Recursos</div>
+    <h2 class="section-title">Conocimiento para la conectividad rural</h2>
+    <p class="section-subtitle">Investigación, análisis y guías sobre la brecha digital en Colombia.</p>
+    <div class="blog-grid">
+      <div class="blog-card fade-up">
+        <div class="blog-img">🌐</div>
+        <div class="blog-body">
+          <div class="blog-tag">Investigación</div>
+          <h3>Estado de la conectividad rural en Colombia 2026: cifras, brechas y oportunidades</h3>
+          <p>Un análisis de los datos más recientes de MinTIC sobre cobertura 4G rural, penetración de Internet por departamento y el impacto del Plan Nacional de Conectividad.</p>
+          <a href="#">Leer más →</a>
+        </div>
+      </div>
+      <div class="blog-card fade-up">
+        <div class="blog-img">🛠️</div>
+        <div class="blog-body">
+          <div class="blog-tag">Guía técnica</div>
+          <h3>Cómo monitorear redes rurales sin equipo técnico especializado</h3>
+          <p>Una guía práctica para alcaldías y cooperativas de conectividad que necesitan visibilidad sobre su infraestructura sin depender de soluciones enterprise costosas.</p>
+          <a href="#">Leer más →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACTO -->
+<section class="contacto" id="contacto">
+  <div class="section-inner">
+    <div class="section-label" style="color:var(--teal);">Contacto</div>
+    <h2 class="section-title">¿Listo para transformar tu operación de redes?</h2>
+    <p class="section-subtitle">Agenda una demo o escríbenos. Respondemos en menos de 24 horas.</p>
+    <div class="contacto-grid">
+      <form class="contacto-form" onsubmit="event.preventDefault(); alert('¡Gracias! Nos pondremos en contacto pronto.');">
+        <div class="form-group">
+          <label>Nombre completo</label>
+          <input type="text" placeholder="Tu nombre" required>
+        </div>
+        <div class="form-group">
+          <label>Email institucional</label>
+          <input type="email" placeholder="nombre@entidad.gov.co" required>
+        </div>
+        <div class="form-group">
+          <label>Organización</label>
+          <input type="text" placeholder="Alcaldía, operador, gobernación...">
+        </div>
+        <div class="form-group">
+          <label>Mensaje</label>
+          <textarea placeholder="Cuéntanos sobre tu infraestructura de conectividad..."></textarea>
+        </div>
+        <button type="submit" class="btn-primary" style="justify-content:center;">Enviar mensaje →</button>
+      </form>
+      <div class="contacto-info">
+        <div class="info-item">
+          <div class="info-icon">📧</div>
+          <div>
+            <h4>Email</h4>
+            <p>hola@connectr.co</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon">📍</div>
+          <div>
+            <h4>Ubicación</h4>
+            <p>Medellín, Colombia<br>Universidad EAFIT — Ruta N</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon">🔗</div>
+          <div>
+            <h4>Redes</h4>
+            <p>LinkedIn · Twitter · GitHub</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon">📞</div>
+          <div>
+            <h4>Teléfono</h4>
+            <p>+57 (604) 123-4567</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 CONNECTR S.A.S. · Medellín, Colombia · Todos los derechos reservados · <a href="#">Política de privacidad</a></p>
+</footer>
+
+<script>
+// Scroll fade-in animation
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.15 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
