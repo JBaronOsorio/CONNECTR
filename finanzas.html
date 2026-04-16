@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CONNECTR — Dashboard Financiero Interactivo</title>
+<script src="https://cdn.plot.ly/plotly-2.35.0.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=KaTeX_Math&display=swap" rel="stylesheet">
+<style>
+:root {
+  --midnight: #0B1222;
+  --deep: #111B2E;
+  --navy: #162033;
+  --teal: #00D4AA;
+  --teal-dim: #00B893;
+  --teal-glow: rgba(0,212,170,0.12);
+  --sky: #38BDF8;
+  --lavender: #A78BFA;
+  --orange: #FF6B35;
+  --red: #EF4444;
+  --green: #22C55E;
+  --cream: #FAFAF7;
+  --white: #FFFFFF;
+  --gray-50: #F8FAFC;
+  --gray-100: #F1F5F9;
+  --gray-200: #E2E8F0;
+  --gray-300: #CBD5E1;
+  --gray-400: #94A3B8;
+  --gray-500: #64748B;
+  --gray-600: #475569;
+  --gray-800: #1E293B;
+  --font-display: 'Space Mono', monospace;
+  --font-body: 'DM Sans', sans-serif;
+  --radius: 16px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.06);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.1);
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--gray-50);
+  color: var(--gray-800);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+}
+
+/* ── NAV ─────────────────────────────────────────── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(11,18,34,0.95); backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(0,212,170,0.1);
+  padding: 0 2rem; height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.topbar-logo {
+  font-family: var(--font-display); font-weight: 700; font-size: 1.1rem;
+  color: var(--teal); letter-spacing: 2px;
+}
+.topbar-logo span { color: var(--white); }
+.topbar-links { display: flex; gap: 1.5rem; }
+.topbar-links a {
+  color: var(--gray-400); text-decoration: none; font-size: 0.8rem;
+  font-weight: 500; transition: color 0.2s;
+}
+.topbar-links a:hover { color: var(--teal); }
+
+/* ── LAYOUT ──────────────────────────────────────── */
+.container { max-width: 1300px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+.header-section {
+  text-align: center; margin-bottom: 2rem;
+}
+.header-section h1 {
+  font-family: var(--font-display); font-size: 2rem; color: var(--midnight);
+  margin-bottom: 0.5rem; letter-spacing: -0.5px;
+}
+.header-section p { color: var(--gray-500); font-size: 1rem; max-width: 700px; margin: 0 auto; }
+
+/* ── TOGGLE ──────────────────────────────────────── */
+.scenario-toggle {
+  display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 2.5rem;
+}
+.toggle-btn {
+  padding: 0.6rem 1.5rem; border-radius: 100px; border: 2px solid var(--gray-200);
+  background: var(--white); color: var(--gray-500); font-family: var(--font-body);
+  font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.25s;
+}
+.toggle-btn.active {
+  background: var(--midnight); color: var(--teal); border-color: var(--midnight);
+}
+.toggle-btn:hover:not(.active) { border-color: var(--teal); color: var(--teal-dim); }
+
+/* ── CARDS & GRID ────────────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+.grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-bottom: 2rem; }
+.full { grid-column: 1 / -1; }
+
+.card {
+  background: var(--white); border-radius: var(--radius);
+  border: 1px solid var(--gray-200); padding: 1.5rem;
+  box-shadow: var(--shadow); transition: box-shadow 0.2s;
+}
+.card:hover { box-shadow: var(--shadow-lg); }
+.card-title {
+  font-family: var(--font-display); font-size: 0.7rem; color: var(--teal-dim);
+  text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.75rem;
+}
+
+/* ── KPI CARDS ───────────────────────────────────── */
+.kpi {
+  text-align: center; padding: 1.25rem 1rem;
+}
+.kpi-value {
+  font-family: var(--font-display); font-size: 1.8rem; font-weight: 700;
+  color: var(--midnight); line-height: 1.1;
+}
+.kpi-value.good { color: var(--teal); }
+.kpi-value.warn { color: var(--orange); }
+.kpi-label {
+  font-size: 0.78rem; color: var(--gray-500); margin-top: 0.4rem; font-weight: 500;
+}
+
+/* ── FORMULA SECTION ─────────────────────────────── */
+.section-divider {
+  margin: 3rem 0 2rem; padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--teal-glow);
+}
+.section-divider h2 {
+  font-family: var(--font-display); font-size: 1.3rem; color: var(--midnight);
+  letter-spacing: -0.3px;
+}
+.section-divider p { font-size: 0.9rem; color: var(--gray-500); margin-top: 0.25rem; }
+
+.formula-card {
+  background: var(--white); border-radius: var(--radius);
+  border: 1px solid var(--gray-200); padding: 2rem;
+  box-shadow: var(--shadow); margin-bottom: 1.5rem;
+}
+.formula-card h3 {
+  font-size: 1.05rem; font-weight: 700; color: var(--midnight); margin-bottom: 0.5rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.formula-card h3 .badge {
+  font-family: var(--font-display); font-size: 0.6rem; background: var(--teal-glow);
+  color: var(--teal-dim); padding: 0.2rem 0.6rem; border-radius: 100px;
+  font-weight: 600; letter-spacing: 1px;
+}
+.formula-card .desc {
+  font-size: 0.9rem; color: var(--gray-500); margin-bottom: 1.25rem; line-height: 1.7;
+}
+.formula-box {
+  background: var(--gray-50); border: 1px solid var(--gray-200);
+  border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem;
+  font-family: var(--font-display); font-size: 0.95rem; color: var(--midnight);
+  text-align: center; line-height: 2;
+}
+.formula-box .frac {
+  display: inline-flex; flex-direction: column; align-items: center;
+  vertical-align: middle; margin: 0 0.3rem;
+}
+.formula-box .frac .num { border-bottom: 2px solid var(--gray-400); padding: 0 0.4rem 0.15rem; }
+.formula-box .frac .den { padding: 0.15rem 0.4rem 0; }
+.calc-steps {
+  background: var(--midnight); border-radius: 12px; padding: 1.25rem 1.5rem;
+  font-family: var(--font-display); font-size: 0.82rem; color: var(--gray-300);
+  line-height: 2.2; overflow-x: auto;
+}
+.calc-steps .step { display: block; }
+.calc-steps .result { color: var(--teal); font-weight: 700; font-size: 0.95rem; }
+.calc-steps .comment { color: var(--gray-500); }
+.interpretation {
+  margin-top: 1rem; padding: 1rem 1.25rem;
+  background: rgba(0,212,170,0.06); border-left: 3px solid var(--teal);
+  border-radius: 0 10px 10px 0; font-size: 0.88rem; color: var(--gray-600);
+}
+.interpretation strong { color: var(--teal-dim); }
+
+/* ── TABLE ───────────────────────────────────────── */
+.comp-table {
+  width: 100%; border-collapse: separate; border-spacing: 0;
+  font-size: 0.85rem; margin-top: 1rem;
+}
+.comp-table th {
+  background: var(--midnight); color: var(--white); padding: 0.75rem 1rem;
+  text-align: left; font-weight: 600; font-size: 0.78rem;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.comp-table th:first-child { border-radius: 10px 0 0 0; }
+.comp-table th:last-child { border-radius: 0 10px 0 0; }
+.comp-table td {
+  padding: 0.7rem 1rem; border-bottom: 1px solid var(--gray-100);
+}
+.comp-table tr:last-child td:first-child { border-radius: 0 0 0 10px; }
+.comp-table tr:last-child td:last-child { border-radius: 0 0 10px 0; }
+.comp-table tr:hover td { background: var(--gray-50); }
+.comp-table .change-pos { color: var(--green); font-weight: 600; }
+.comp-table .change-neg { color: var(--red); font-weight: 600; }
+.comp-table .change-neutral { color: var(--orange); font-weight: 600; }
+
+/* ── RESPONSIVE ──────────────────────────────────── */
+@media (max-width: 900px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .grid-5 { grid-template-columns: repeat(2, 1fr); }
+  .header-section h1 { font-size: 1.5rem; }
+  .topbar-links { display: none; }
+}
+@media (max-width: 600px) {
+  .grid-5 { grid-template-columns: 1fr; }
+  .container { padding: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">CONNECT<span>R</span> <span style="color:var(--gray-500);font-size:0.7rem;letter-spacing:0;font-weight:400;margin-left:0.5rem;">FINANZAS</span></div>
+  <div class="topbar-links">
+    <a href="#kpis">KPIs</a>
+    <a href="#proyeccion">Proyección</a>
+    <a href="#formulas">Fórmulas</a>
+    <a href="#sensibilidad">Sensibilidad</a>
+    <a href="#comparacion">Comparación</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header-section">
+    <h1>Dashboard Financiero Interactivo</h1>
+    <p>Proyección a 3 años con cálculo paso a paso de cada índice financiero — Escenario Original vs Ajustado</p>
+  </div>
+
+  <!-- TOGGLE -->
+  <div class="scenario-toggle">
+    <button class="toggle-btn active" onclick="setScenario('adjusted')">Ajustado (Realista)</button>
+    <button class="toggle-btn" onclick="setScenario('original')">Original (Guión)</button>
+  </div>
+
+  <!-- KPIs -->
+  <div id="kpis" class="grid-5">
+    <div class="card kpi">
+      <div class="kpi-value" id="kpi-cac">$4,500</div>
+      <div class="kpi-label">CAC</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-value" id="kpi-ltv">$48,000</div>
+      <div class="kpi-label">LTV</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-value good" id="kpi-ltvcac">10.7x</div>
+      <div class="kpi-label">LTV / CAC</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-value good" id="kpi-margin">78%</div>
+      <div class="kpi-label">Margen Bruto</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-value good" id="kpi-retention">82%</div>
+      <div class="kpi-label">Retención Anual</div>
+    </div>
+  </div>
+
+  <!-- REVENUE & CLIENTS -->
+  <div id="proyeccion" class="grid-2">
+    <div class="card">
+      <div class="card-title">Proyección de Revenue (USD M)</div>
+      <div id="chart-revenue" style="height:380px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Crecimiento de Clientes</div>
+      <div id="chart-clients" style="height:380px;"></div>
+    </div>
+  </div>
+
+  <!-- MARGIN & ARPA -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Margen Neto por Año</div>
+      <div id="chart-margin" style="height:340px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">ARPA — Revenue Promedio por Cliente</div>
+      <div id="chart-arpa" style="height:340px;"></div>
+    </div>
+  </div>
+
+  <!-- RENTABILIDAD KPIs -->
+  <div class="grid-5" style="margin-top:1.5rem;">
+    <div class="card kpi">
+      <div class="kpi-value good" id="kpi-vpn">$5.25M</div>
+      <div class="kpi-label" id="kpi-vpn-label">VPN (WACC 20%)</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-value good" id="kpi-tir">185%</div>
+      <div class="kpi-label">TIR</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-value" id="kpi-be-cl">22</div>
+      <div class="kpi-label">Break-even (clientes)</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-value" id="kpi-be-mes">Mes 8</div>
+      <div class="kpi-label">Break-even (tiempo)</div>
+    </div>
+    <div class="card kpi">
+      <div class="kpi-value good" id="kpi-payback">11 meses</div>
+      <div class="kpi-label">Payback</div>
+    </div>
+  </div>
+
+  <!-- CASH FLOW & WATERFALL -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Flujo de Caja Acumulado (USD M)</div>
+      <div id="chart-cashflow" style="height:380px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Desglose del VPN (Waterfall)</div>
+      <div id="chart-waterfall" style="height:380px;"></div>
+    </div>
+  </div>
+
+  <!-- MIX & UNIT ECONOMICS -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Mix de Ingresos</div>
+      <div id="chart-mix" style="height:360px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Unit Economics — CAC vs LTV</div>
+      <div id="chart-unit" style="height:360px;"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- FÓRMULAS PASO A PASO -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+
+  <div id="formulas" class="section-divider">
+    <h2>Cómo se calcula cada índice</h2>
+    <p>Fórmulas, datos y cálculo paso a paso para el escenario activo</p>
+  </div>
+
+  <!-- CAC -->
+  <div class="formula-card" id="formula-cac">
+    <h3>CAC — Costo de Adquisición de Cliente <span class="badge">UNIT ECONOMICS</span></h3>
+    <p class="desc">Mide cuánto cuesta, en promedio, adquirir un nuevo cliente. Incluye marketing, ventas, propuestas SECOP, viajes y demos.</p>
+    <div class="formula-box">
+      CAC = <span class="frac"><span class="num">Gasto total en ventas y marketing</span><span class="den">Número de clientes nuevos adquiridos</span></span>
+    </div>
+    <div class="calc-steps" id="calc-cac"></div>
+    <div class="interpretation" id="interp-cac"></div>
+  </div>
+
+  <!-- LTV -->
+  <div class="formula-card" id="formula-ltv">
+    <h3>LTV — Lifetime Value (Valor de Vida del Cliente) <span class="badge">UNIT ECONOMICS</span></h3>
+    <p class="desc">Estima el ingreso total que genera un cliente durante toda su relación con CONNECTR. Depende del ARPA y la retención.</p>
+    <div class="formula-box">
+      LTV = <span class="frac"><span class="num">ARPA (ingreso promedio anual por cliente)</span><span class="den">Tasa de churn (1 − retención)</span></span>
+    </div>
+    <div class="calc-steps" id="calc-ltv"></div>
+    <div class="interpretation" id="interp-ltv"></div>
+  </div>
+
+  <!-- LTV/CAC -->
+  <div class="formula-card">
+    <h3>LTV / CAC — Ratio de Eficiencia <span class="badge">UNIT ECONOMICS</span></h3>
+    <p class="desc">Indica cuántos dólares de valor genera cada dólar invertido en adquirir un cliente. Un ratio > 3x se considera saludable en SaaS.</p>
+    <div class="formula-box">
+      LTV/CAC = <span class="frac"><span class="num">LTV</span><span class="den">CAC</span></span>
+    </div>
+    <div class="calc-steps" id="calc-ltvcac"></div>
+    <div class="interpretation" id="interp-ltvcac"></div>
+  </div>
+
+  <!-- MARGEN BRUTO -->
+  <div class="formula-card">
+    <h3>Margen Bruto <span class="badge">RENTABILIDAD</span></h3>
+    <p class="desc">Porcentaje de ingresos que queda después de cubrir los costos directos de entregar el servicio (infraestructura cloud, soporte técnico).</p>
+    <div class="formula-box">
+      Margen Bruto = <span class="frac"><span class="num">Revenue − COGS</span><span class="den">Revenue</span></span> × 100
+    </div>
+    <div class="calc-steps" id="calc-margin"></div>
+    <div class="interpretation" id="interp-margin"></div>
+  </div>
+
+  <!-- VPN -->
+  <div class="formula-card">
+    <h3>VPN — Valor Presente Neto <span class="badge">VALORACIÓN</span></h3>
+    <p class="desc">Calcula el valor actual de todos los flujos de caja futuros descontados a la tasa WACC, menos la inversión inicial. Si VPN > 0, el proyecto genera valor.</p>
+    <div class="formula-box">
+      VPN = −I₀ + <span style="font-size:1.4rem;">Σ</span> <span class="frac"><span class="num">FCₜ</span><span class="den">(1 + WACC)ᵗ</span></span>
+    </div>
+    <div class="calc-steps" id="calc-vpn"></div>
+    <div class="interpretation" id="interp-vpn"></div>
+  </div>
+
+  <!-- TIR -->
+  <div class="formula-card">
+    <h3>TIR — Tasa Interna de Retorno <span class="badge">VALORACIÓN</span></h3>
+    <p class="desc">Es la tasa de descuento que hace que el VPN sea exactamente 0. Si TIR > WACC, el proyecto rinde más que su costo de capital.</p>
+    <div class="formula-box">
+      0 = −I₀ + <span style="font-size:1.4rem;">Σ</span> <span class="frac"><span class="num">FCₜ</span><span class="den">(1 + TIR)ᵗ</span></span> → resolver para TIR
+    </div>
+    <div class="calc-steps" id="calc-tir"></div>
+    <div class="interpretation" id="interp-tir"></div>
+  </div>
+
+  <!-- BREAK-EVEN -->
+  <div class="formula-card">
+    <h3>Punto de Equilibrio (Break-even) <span class="badge">VIABILIDAD</span></h3>
+    <p class="desc">Número mínimo de clientes necesarios para cubrir todos los costos fijos. Por debajo de este punto, la empresa pierde dinero.</p>
+    <div class="formula-box">
+      Break-even = <span class="frac"><span class="num">Costos Fijos Anuales</span><span class="den">ARPA × Margen Bruto</span></span>
+    </div>
+    <div class="calc-steps" id="calc-be"></div>
+    <div class="interpretation" id="interp-be"></div>
+  </div>
+
+  <!-- PAYBACK -->
+  <div class="formula-card">
+    <h3>Payback Period — Periodo de Recuperación <span class="badge">VIABILIDAD</span></h3>
+    <p class="desc">Tiempo en meses que tarda la empresa en recuperar la inversión inicial con los flujos de caja generados.</p>
+    <div class="formula-box">
+      Payback = <span class="frac"><span class="num">Inversión Inicial</span><span class="den">Utilidad Neta Mensual Promedio (Year 1)</span></span>
+    </div>
+    <div class="calc-steps" id="calc-payback"></div>
+    <div class="interpretation" id="interp-payback"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SENSIBILIDAD -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+
+  <div id="sensibilidad" class="section-divider">
+    <h2>Análisis de Sensibilidad</h2>
+    <p>¿Qué pasa si cambian las condiciones? Robustez del proyecto ante variaciones</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">VPN vs Tasa de Descuento (WACC)</div>
+      <div id="chart-sens-wacc" style="height:380px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Utilidad Neta Y3 vs % de Clientes Logrados</div>
+      <div id="chart-sens-clients" style="height:380px;"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- COMPARACIÓN -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+
+  <div id="comparacion" class="section-divider">
+    <h2>Comparación: Original vs Ajustado</h2>
+    <p>Cambios realizados y su justificación</p>
+  </div>
+
+  <div class="card" style="margin-bottom:1.5rem;">
+    <table class="comp-table">
+      <thead>
+        <tr><th>Métrica</th><th>Original</th><th>Ajustado</th><th>Cambio</th><th>Justificación</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>CAC</strong></td><td>$2,000</td><td>$4,500</td><td class="change-neutral">+125%</td><td>Ventas B2G requieren SECOP, propuestas, reuniones presenciales</td></tr>
+        <tr><td><strong>LTV</strong></td><td>$30,000</td><td>$48,000</td><td class="change-pos">+60%</td><td>Consistente con ARPA ~$33K y retención 82%</td></tr>
+        <tr><td><strong>LTV/CAC</strong></td><td>15.0x</td><td>10.7x</td><td class="change-neg">−29%</td><td>Sigue siendo excelente (benchmark SaaS > 3x)</td></tr>
+        <tr><td><strong>Clientes Y1</strong></td><td>33</td><td>22</td><td class="change-neg">−33%</td><td>Ciclos de compra pública de 3-6 meses</td></tr>
+        <tr><td><strong>Clientes Y2</strong></td><td>120</td><td>68</td><td class="change-neg">−43%</td><td>Crecimiento 3x sobre base realista</td></tr>
+        <tr><td><strong>Clientes Y3</strong></td><td>315</td><td>160</td><td class="change-neg">−49%</td><td>Incluye operadores privados con ciclo más corto</td></tr>
+        <tr><td><strong>Revenue Y1</strong></td><td>$1.08M</td><td>$0.72M</td><td class="change-neg">−33%</td><td>Menos clientes, margen sigue positivo</td></tr>
+        <tr><td><strong>Revenue Y3</strong></td><td>$17.25M</td><td>$8.80M</td><td class="change-neg">−49%</td><td>$8.8M sigue siendo un negocio significativo</td></tr>
+        <tr><td><strong>WACC</strong></td><td>15%</td><td>20%</td><td class="change-neutral">+5pp</td><td>15% es WACC corporativo; 20% refleja riesgo startup</td></tr>
+        <tr><td><strong>Break-even</strong></td><td>Mes 5-6</td><td>Mes 8</td><td class="change-neutral">+2.5 meses</td><td>Más realista para contratos gobierno</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Revenue Comparado — Original vs Ajustado</div>
+    <div id="chart-comparison" style="height:400px;"></div>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="text-align:center; margin-top:3rem; padding-top:2rem; border-top:1px solid var(--gray-200);">
+    <p style="font-size:0.8rem; color:var(--gray-400);">CONNECTR — Dashboard Financiero | Felipe, Thomas & Juan José | Universidad EAFIT 2026</p>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- JAVASCRIPT -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<script>
+const TEAL = '#00D4AA';
+const SKY  = '#38BDF8';
+const ORANGE = '#FF6B35';
+const NAVY = '#0B1222';
+const GRAY = '#CBD5E1';
+const GREEN = '#22C55E';
+const RED = '#EF4444';
+
+const scenarios = {
+  original: {
+    label: 'Original (Guión)',
+    clients: [33, 120, 315],
+    revenue: [1.08, 5.30, 17.25],
+    costs:   [0.60, 1.75, 5.18],
+    cac: 2000, ltv: 30000,
+    retention: 0.80, grossMargin: 0.775,
+    wacc: 0.15, investment: 400000,
+    beCl: 29, beMes: 5.5,
+  },
+  adjusted: {
+    label: 'Ajustado (Realista)',
+    clients: [22, 68, 160],
+    revenue: [0.72, 3.10, 8.80],
+    costs:   [0.58, 1.45, 3.25],
+    cac: 4500, ltv: 48000,
+    retention: 0.82, grossMargin: 0.78,
+    wacc: 0.20, investment: 400000,
+    beCl: 22, beMes: 8,
+  }
+};
+
+let current = 'adjusted';
+const years = ['Year 1','Year 2','Year 3'];
+const plotCfg = {responsive: true, displayModeBar: false};
+const plotLayout = (extra = {}) => ({
+  margin: {t:20, b:40, l:55, r:20},
+  font: {family: 'DM Sans'},
+  paper_bgcolor: 'transparent',
+  plot_bgcolor: 'transparent',
+  xaxis: {gridcolor: '#f1f5f9'},
+  yaxis: {gridcolor: '#f1f5f9'},
+  ...extra
+});
+
+function setScenario(key) {
+  current = key;
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  render();
+}
+
+function fmt(n, dec=0) { return n.toLocaleString('en-US', {minimumFractionDigits: dec, maximumFractionDigits: dec}); }
+function fmtM(n) { return '$' + n.toFixed(2) + 'M'; }
+
+function computeIRR(cfs) {
+  let r = 0.5;
+  for (let i = 0; i < 500; i++) {
+    let npv = 0, dnpv = 0;
+    for (let t = 0; t < cfs.length; t++) {
+      npv  += cfs[t] / Math.pow(1+r, t);
+      dnpv += -t * cfs[t] / Math.pow(1+r, t+1);
+    }
+    if (Math.abs(dnpv) < 1e-14) break;
+    r -= npv / dnpv;
+    if (Math.abs(npv) < 1e-8) break;
+  }
+  return r;
+}
+
+function render() {
+  const sc = scenarios[current];
+  const net = sc.revenue.map((r,i) => r - sc.costs[i]);
+  const marginPct = net.map((n,i) => (n/sc.revenue[i])*100);
+  const arpa = sc.revenue.map((r,i) => (r*1e6)/sc.clients[i]);
+  const ltvCac = sc.ltv / sc.cac;
+  const churn = 1 - sc.retention;
+
+  // ── KPIs ──
+  document.getElementById('kpi-cac').textContent = '$' + fmt(sc.cac);
+  document.getElementById('kpi-ltv').textContent = '$' + fmt(sc.ltv);
+  document.getElementById('kpi-ltvcac').textContent = ltvCac.toFixed(1) + 'x';
+  document.getElementById('kpi-margin').textContent = (sc.grossMargin*100).toFixed(0) + '%';
+  document.getElementById('kpi-retention').textContent = (sc.retention*100).toFixed(0) + '%';
+
+  // ── Revenue chart ──
+  Plotly.react('chart-revenue', [
+    {x: years, y: sc.revenue, type:'bar', name:'Revenue', marker:{color:TEAL},
+     text: sc.revenue.map(v=>'$'+v.toFixed(2)+'M'), textposition:'outside'},
+    {x: years, y: sc.costs, type:'bar', name:'Costos', marker:{color:GRAY},
+     text: sc.costs.map(v=>'$'+v.toFixed(2)+'M'), textposition:'outside'},
+    {x: years, y: net, name:'Utilidad Neta', mode:'lines+markers+text',
+     line:{color:GREEN, width:3}, marker:{size:8},
+     text: net.map(v=>'$'+v.toFixed(2)+'M'), textposition:'top center'},
+  ], plotLayout({barmode:'group', legend:{orientation:'h',y:-0.15}}), plotCfg);
+
+  // ── Clients chart ──
+  const growth = [0, ...sc.clients.slice(1).map((c,i)=>((c-sc.clients[i])/sc.clients[i])*100)];
+  Plotly.react('chart-clients', [
+    {x: years, y: sc.clients, type:'bar', name:'Clientes', marker:{color:TEAL},
+     text: sc.clients.map(String), textposition:'outside'},
+    {x: years.slice(1), y: growth.slice(1), name:'Crecimiento %', mode:'lines+markers+text',
+     yaxis:'y2', line:{color:ORANGE, width:2, dash:'dot'},
+     text: growth.slice(1).map(g=>g.toFixed(0)+'%'), textposition:'top center'},
+  ], plotLayout({
+    legend:{orientation:'h',y:-0.15},
+    yaxis:{title:'Clientes', gridcolor:'#f1f5f9'},
+    yaxis2:{title:'Crecimiento %', overlaying:'y', side:'right', gridcolor:'transparent'},
+  }), plotCfg);
+
+  // ── Margin chart ──
+  Plotly.react('chart-margin', [
+    {x: years, y: marginPct, type:'bar',
+     marker:{color: marginPct.map(m => m > 50 ? GREEN : TEAL)},
+     text: marginPct.map(m=>m.toFixed(1)+'%'), textposition:'outside'},
+  ], plotLayout({yaxis:{title:'%', range:[0,Math.max(...marginPct)*1.3], gridcolor:'#f1f5f9'}}), plotCfg);
+
+  // ── ARPA chart ──
+  Plotly.react('chart-arpa', [
+    {x: years, y: arpa, type:'bar', marker:{color:TEAL},
+     text: arpa.map(a=>'$'+fmt(a)), textposition:'outside'},
+  ], plotLayout({yaxis:{title:'USD / cliente / año', gridcolor:'#f1f5f9'}}), plotCfg);
+
+  // ── VPN / TIR ──
+  const invM = sc.investment / 1e6;
+  const cashFlows = [-invM, ...net];
+  const df = [1, ...net.map((_,t)=>1/Math.pow(1+sc.wacc, t+1))];
+  const pv = cashFlows.map((cf,i) => cf * (i===0 ? 1 : df[i]));
+  const vpn = pv.reduce((a,b)=>a+b, 0);
+  const tir = computeIRR(cashFlows) * 100;
+  const cumulative = cashFlows.reduce((acc,v) => {acc.push((acc.length?acc[acc.length-1]:0)+v); return acc;}, []);
+  let paybackYr = null;
+  for (let i = 1; i < cumulative.length; i++) {
+    if (cumulative[i] >= 0) {
+      paybackYr = (i-1) + (-cumulative[i-1] / (cumulative[i] - cumulative[i-1]));
+      break;
+    }
+  }
+
+  document.getElementById('kpi-vpn').textContent = '$' + vpn.toFixed(2) + 'M';
+  document.getElementById('kpi-vpn-label').textContent = 'VPN (WACC ' + (sc.wacc*100).toFixed(0) + '%)';
+  document.getElementById('kpi-tir').textContent = tir.toFixed(0) + '%';
+  document.getElementById('kpi-be-cl').textContent = sc.beCl;
+  document.getElementById('kpi-be-mes').textContent = 'Mes ' + sc.beMes;
+  document.getElementById('kpi-payback').textContent = paybackYr ? (paybackYr*12).toFixed(0)+' meses' : 'N/A';
+
+  // ── Cashflow chart ──
+  const cfLabels = ['Inversión','Year 1','Year 2','Year 3'];
+  Plotly.react('chart-cashflow', [
+    {x: cfLabels, y: cumulative, mode:'lines+markers+text',
+     line:{color:TEAL, width:3}, marker:{size:10},
+     text: cumulative.map(v=>'$'+v.toFixed(2)+'M'), textposition:'top center',
+     fill:'tozeroy', fillcolor:'rgba(0,212,170,0.08)'},
+    {x: cfLabels, y: [0,0,0,0], mode:'lines', line:{color:RED, dash:'dash', width:1}, showlegend:false},
+  ], plotLayout({yaxis:{title:'USD M', gridcolor:'#f1f5f9'}, showlegend:false}), plotCfg);
+
+  // ── Waterfall ──
+  Plotly.react('chart-waterfall', [
+    {type:'waterfall',
+     x:['Inversión','VP Y1','VP Y2','VP Y3','VPN Total'],
+     y:[pv[0], pv[1], pv[2], pv[3], 0],
+     measure:['relative','relative','relative','relative','total'],
+     connector:{line:{color:'#e2e8f0'}},
+     increasing:{marker:{color:GREEN}},
+     decreasing:{marker:{color:ORANGE}},
+     totals:{marker:{color:TEAL}},
+     text:[...pv.map(v=>'$'+v.toFixed(2)+'M'), '$'+vpn.toFixed(2)+'M'],
+     textposition:'outside'},
+  ], plotLayout({yaxis:{title:'USD M', gridcolor:'#f1f5f9'}, showlegend:false}), plotCfg);
+
+  // ── Mix pie ──
+  Plotly.react('chart-mix', [
+    {labels:['SaaS Recurring (70%)','Implementación (20%)','Servicios Prof. (10%)'],
+     values:[70,20,10], type:'pie', hole:0.45,
+     marker:{colors:[TEAL, SKY, ORANGE]},
+     textinfo:'label+percent', textposition:'outside',
+     outsidetextfont:{size:12}},
+  ], plotLayout({showlegend:false}), plotCfg);
+
+  // ── Unit economics ──
+  Plotly.react('chart-unit', [
+    {x:['CAC','LTV'], y:[sc.cac, sc.ltv], type:'bar',
+     marker:{color:[ORANGE, GREEN]},
+     text:['$'+fmt(sc.cac), '$'+fmt(sc.ltv)], textposition:'outside'},
+  ], {
+    ...plotLayout({yaxis:{title:'USD', gridcolor:'#f1f5f9'}}),
+    annotations: [{x:0.5, y:sc.ltv*0.45, text:'Ratio: '+ltvCac.toFixed(1)+'x',
+      showarrow:false, font:{size:22, color:TEAL, family:'Space Mono'}}],
+    showlegend: false,
+  }, plotCfg);
+
+  // ── Sensitivity WACC ──
+  const waccs = [];
+  for (let w = 0.10; w <= 0.50; w += 0.05) waccs.push(w);
+  const vpns = waccs.map(w => {
+    return cashFlows.reduce((sum, cf, t) => sum + cf / Math.pow(1+w, t), 0);
+  });
+  const curIdx = Math.round((sc.wacc - 0.10) / 0.05);
+  Plotly.react('chart-sens-wacc', [
+    {x: waccs.map(w=>(w*100).toFixed(0)+'%'), y: vpns, mode:'lines+markers',
+     line:{color:TEAL, width:2}, fill:'tozeroy', fillcolor:'rgba(0,212,170,0.06)',
+     name:'VPN'},
+    {x: [(sc.wacc*100).toFixed(0)+'%'], y: [vpns[curIdx]||vpn], mode:'markers',
+     marker:{size:14, color:ORANGE, symbol:'star'}, name:'WACC actual'},
+    {x: waccs.map(w=>(w*100).toFixed(0)+'%'), y: waccs.map(()=>0), mode:'lines',
+     line:{color:RED, dash:'dash', width:1}, showlegend:false},
+  ], plotLayout({
+    xaxis:{title:'WACC', gridcolor:'#f1f5f9'},
+    yaxis:{title:'VPN (USD M)', gridcolor:'#f1f5f9'},
+    legend:{orientation:'h', y:-0.18},
+  }), plotCfg);
+
+  // ── Sensitivity clients ──
+  const mults = [];
+  for (let m = 0.3; m <= 1.5; m += 0.1) mults.push(Math.round(m*10)/10);
+  const netVars = mults.map(m => sc.revenue[2]*m - sc.costs[2]);
+  Plotly.react('chart-sens-clients', [
+    {x: mults.map(m=>(m*100).toFixed(0)+'%'), y: netVars, type:'bar',
+     marker:{color: netVars.map(n=>n>0?GREEN:RED)},
+     text: netVars.map(n=>'$'+n.toFixed(1)+'M'), textposition:'outside'},
+    {x: mults.map(m=>(m*100).toFixed(0)+'%'), y: mults.map(()=>0), mode:'lines',
+     line:{color:RED, dash:'dash', width:1}, showlegend:false, type:'scatter'},
+  ], plotLayout({
+    xaxis:{title:'% de clientes proyectados (Y3)', gridcolor:'#f1f5f9'},
+    yaxis:{title:'Utilidad Neta (USD M)', gridcolor:'#f1f5f9'},
+    showlegend:false,
+  }), plotCfg);
+
+  // ── Comparison chart ──
+  const orig = scenarios.original;
+  const adj  = scenarios.adjusted;
+  Plotly.react('chart-comparison', [
+    {x: years, y: orig.revenue, type:'bar', name:'Original', marker:{color:ORANGE}, opacity:0.7,
+     text: orig.revenue.map(v=>'$'+v.toFixed(2)+'M'), textposition:'outside'},
+    {x: years, y: adj.revenue, type:'bar', name:'Ajustado', marker:{color:TEAL}, opacity:0.9,
+     text: adj.revenue.map(v=>'$'+v.toFixed(2)+'M'), textposition:'outside'},
+  ], plotLayout({barmode:'group', legend:{orientation:'h',y:-0.12}, yaxis:{title:'USD M', gridcolor:'#f1f5f9'}}), plotCfg);
+
+  // ── FORMULAS PASO A PASO ──
+  updateFormulas(sc, net, arpa, ltvCac, churn, cashFlows, df, pv, vpn, tir, paybackYr);
+}
+
+function updateFormulas(sc, net, arpa, ltvCac, churn, cashFlows, df, pv, vpn, tir, paybackYr) {
+  const invM = sc.investment / 1e6;
+  const monthlyNet = (net[0] * 1e6) / 12;
+
+  // CAC
+  document.getElementById('calc-cac').innerHTML =
+    `<span class="comment">// Datos de entrada</span>
+<span class="step">Gasto en ventas Y1 (estimado)  = $${fmt(sc.cac * sc.clients[0])}</span>
+<span class="step">Clientes adquiridos Y1         = ${sc.clients[0]}</span>
+<span class="step"></span>
+<span class="comment">// Cálculo</span>
+<span class="step">CAC = $${fmt(sc.cac * sc.clients[0])} ÷ ${sc.clients[0]}</span>
+<span class="result">CAC = $${fmt(sc.cac)}</span>`;
+
+  document.getElementById('interp-cac').innerHTML =
+    `<strong>Interpretación:</strong> Cada nuevo cliente le cuesta a CONNECTR <strong>$${fmt(sc.cac)}</strong> en esfuerzo comercial. ` +
+    (sc.cac < 3000
+      ? 'Este valor es bajo para ventas B2G — asume leads calientes del ecosistema EAFIT/Ruta N.'
+      : 'Este valor es realista para ventas B2G que requieren procesos SECOP y propuestas formales.');
+
+  // LTV
+  document.getElementById('calc-ltv').innerHTML =
+    `<span class="comment">// Datos de entrada</span>
+<span class="step">ARPA (Year 1)         = $${fmt(arpa[0])}/año</span>
+<span class="step">Retención anual       = ${(sc.retention*100).toFixed(0)}%</span>
+<span class="step">Churn (1 − retención) = ${(churn*100).toFixed(0)}%</span>
+<span class="step"></span>
+<span class="comment">// Cálculo</span>
+<span class="step">LTV = ARPA ÷ Churn</span>
+<span class="step">LTV = $${fmt(arpa[0])} ÷ ${churn.toFixed(2)}</span>
+<span class="result">LTV = $${fmt(arpa[0]/churn)} (usamos $${fmt(sc.ltv)} conservador)</span>`;
+
+  document.getElementById('interp-ltv').innerHTML =
+    `<strong>Interpretación:</strong> Cada cliente genera ~<strong>$${fmt(sc.ltv)}</strong> de ingresos durante su vida útil. ` +
+    `El LTV real calculado ($${fmt(arpa[0]/churn)}) es ${arpa[0]/churn > sc.ltv ? 'mayor' : 'menor'} al presentado, lo cual ${arpa[0]/churn > sc.ltv ? 'da margen de seguridad' : 'requiere justificación'}.`;
+
+  // LTV/CAC
+  document.getElementById('calc-ltvcac').innerHTML =
+    `<span class="comment">// Cálculo directo</span>
+<span class="step">LTV/CAC = $${fmt(sc.ltv)} ÷ $${fmt(sc.cac)}</span>
+<span class="result">LTV/CAC = ${ltvCac.toFixed(1)}x</span>`;
+
+  document.getElementById('interp-ltvcac').innerHTML =
+    `<strong>Interpretación:</strong> Por cada <strong>$1</strong> invertido en adquirir un cliente, CONNECTR obtiene <strong>$${ltvCac.toFixed(1)}</strong> de retorno. ` +
+    `El benchmark SaaS es > 3x. Con ${ltvCac.toFixed(1)}x, el modelo es <strong>${ltvCac > 5 ? 'excelente' : ltvCac > 3 ? 'saludable' : 'ajustado'}</strong>.`;
+
+  // Margin
+  const revY1 = sc.revenue[0] * 1e6;
+  const cogsY1 = revY1 * (1 - sc.grossMargin);
+  document.getElementById('calc-margin').innerHTML =
+    `<span class="comment">// Datos Year 1</span>
+<span class="step">Revenue Y1 = $${fmt(revY1)}</span>
+<span class="step">COGS Y1    = $${fmt(revY1)} × ${((1-sc.grossMargin)*100).toFixed(1)}% = $${fmt(cogsY1)}</span>
+<span class="step"></span>
+<span class="comment">// Cálculo</span>
+<span class="step">Margen Bruto = ($${fmt(revY1)} − $${fmt(cogsY1)}) ÷ $${fmt(revY1)} × 100</span>
+<span class="result">Margen Bruto = ${(sc.grossMargin*100).toFixed(1)}%</span>`;
+
+  document.getElementById('interp-margin').innerHTML =
+    `<strong>Interpretación:</strong> CONNECTR retiene el <strong>${(sc.grossMargin*100).toFixed(0)}%</strong> de cada dólar de revenue después de costos directos (AWS, soporte). ` +
+    `El estándar SaaS es 70-85%. CONNECTR está ${sc.grossMargin >= 0.70 ? 'dentro del rango saludable' : 'por debajo del rango óptimo'}.`;
+
+  // VPN
+  document.getElementById('calc-vpn').innerHTML =
+    `<span class="comment">// Flujos de caja y factores de descuento (WACC = ${(sc.wacc*100).toFixed(0)}%)</span>
+<span class="step">t=0  FC = −$${invM.toFixed(2)}M   ÷ (1+${sc.wacc})⁰ = −$${invM.toFixed(2)}M   (inversión)</span>
+<span class="step">t=1  FC = +$${net[0].toFixed(2)}M   ÷ (1+${sc.wacc})¹ = +$${pv[1].toFixed(3)}M</span>
+<span class="step">t=2  FC = +$${net[1].toFixed(2)}M   ÷ (1+${sc.wacc})² = +$${pv[2].toFixed(3)}M</span>
+<span class="step">t=3  FC = +$${net[2].toFixed(2)}M   ÷ (1+${sc.wacc})³ = +$${pv[3].toFixed(3)}M</span>
+<span class="step"></span>
+<span class="comment">// Suma</span>
+<span class="step">VPN = ${pv.map(v => (v>=0?'+':'') + v.toFixed(3)).join(' ')}M</span>
+<span class="result">VPN = $${vpn.toFixed(2)}M</span>`;
+
+  document.getElementById('interp-vpn').innerHTML =
+    `<strong>Interpretación:</strong> El VPN de <strong>${fmtM(vpn)}</strong> significa que, descontando los flujos a una tasa del ${(sc.wacc*100).toFixed(0)}%, ` +
+    `el proyecto genera <strong>${fmtM(vpn)}</strong> de valor por encima de lo que un inversionista exigiría como retorno mínimo. <strong>VPN > 0 → el proyecto es viable.</strong>`;
+
+  // TIR
+  document.getElementById('calc-tir').innerHTML =
+    `<span class="comment">// Método iterativo (Newton-Raphson)</span>
+<span class="step">Flujos: [${cashFlows.map(c=>(c>=0?'+':'')+c.toFixed(2)+'M').join(', ')}]</span>
+<span class="step"></span>
+<span class="comment">// Buscar tasa r donde VPN = 0</span>
+<span class="step">0 = ${cashFlows.map((c,t)=>(c>=0?'+':'')+c.toFixed(2)+'/(1+r)^'+t).join(' ')}</span>
+<span class="step"></span>
+<span class="comment">// Resultado por iteración numérica</span>
+<span class="result">TIR = ${tir.toFixed(1)}%</span>
+<span class="step"></span>
+<span class="step">Verificación: TIR (${tir.toFixed(0)}%) ${tir > sc.wacc*100 ? '>' : '<'} WACC (${(sc.wacc*100).toFixed(0)}%) → ${tir > sc.wacc*100 ? '✅ Proyecto VIABLE' : '❌ Proyecto NO viable'}</span>`;
+
+  document.getElementById('interp-tir').innerHTML =
+    `<strong>Interpretación:</strong> La TIR de <strong>${tir.toFixed(0)}%</strong> significa que el proyecto rinde un ${tir.toFixed(0)}% anual sobre la inversión. ` +
+    `Como TIR (${tir.toFixed(0)}%) >> WACC (${(sc.wacc*100).toFixed(0)}%), el proyecto <strong>supera ampliamente</strong> el costo de capital. ` +
+    (tir > 200 ? 'Una TIR tan alta refleja la baja inversión inicial relativa al revenue generado — CONNECTR es capital-efficient.' : '');
+
+  // Break-even
+  const arpaY1 = arpa[0];
+  const beCalc = (sc.costs[0]*1e6) / (arpaY1 * sc.grossMargin);
+  document.getElementById('calc-be').innerHTML =
+    `<span class="comment">// Datos</span>
+<span class="step">Costos Fijos Anuales = $${fmt(sc.costs[0]*1e6)}</span>
+<span class="step">ARPA                = $${fmt(arpaY1)}</span>
+<span class="step">Margen Bruto        = ${(sc.grossMargin*100).toFixed(1)}%</span>
+<span class="step">Contribución/cliente = $${fmt(arpaY1)} × ${sc.grossMargin.toFixed(3)} = $${fmt(arpaY1*sc.grossMargin)}</span>
+<span class="step"></span>
+<span class="comment">// Cálculo</span>
+<span class="step">Break-even = $${fmt(sc.costs[0]*1e6)} ÷ $${fmt(arpaY1*sc.grossMargin)}</span>
+<span class="result">Break-even = ${beCalc.toFixed(1)} clientes ≈ ${sc.beCl} clientes (mes ${sc.beMes})</span>`;
+
+  document.getElementById('interp-be').innerHTML =
+    `<strong>Interpretación:</strong> CONNECTR necesita <strong>${sc.beCl} clientes</strong> para cubrir todos sus costos operativos. ` +
+    `Se proyecta alcanzar este punto en el <strong>mes ${sc.beMes}</strong>. ` +
+    (sc.beMes <= 6 ? 'Esto es muy agresivo para ventas a gobierno — los ciclos SECOP típicos son de 3-6 meses.' : 'Este timeline es realista considerando los ciclos de contratación pública.');
+
+  // Payback
+  const payMonths = paybackYr ? (paybackYr * 12) : 0;
+  document.getElementById('calc-payback').innerHTML =
+    `<span class="comment">// Datos</span>
+<span class="step">Inversión Inicial      = $${fmt(sc.investment)}</span>
+<span class="step">Utilidad Neta Year 1   = $${fmt(net[0]*1e6)}</span>
+<span class="step">Utilidad mensual prom. = $${fmt(net[0]*1e6)} ÷ 12 = $${fmt(monthlyNet)}/mes</span>
+<span class="step"></span>
+<span class="comment">// Cálculo</span>
+<span class="step">Payback = $${fmt(sc.investment)} ÷ $${fmt(monthlyNet)}/mes</span>
+<span class="result">Payback = ${payMonths.toFixed(1)} meses</span>`;
+
+  document.getElementById('interp-payback').innerHTML =
+    `<strong>Interpretación:</strong> La inversión de <strong>$${fmt(sc.investment)}</strong> se recupera en <strong>${payMonths.toFixed(0)} meses</strong>. ` +
+    (payMonths <= 12 ? 'Recuperar la inversión en menos de un año es excelente para una startup — indica bajo riesgo de capital.' :
+     'Un payback de '+payMonths.toFixed(0)+' meses es razonable para B2G SaaS con ciclos de venta largos.');
+}
+
+render();
+</script>
+
+</body>
+</html>
